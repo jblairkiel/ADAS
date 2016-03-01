@@ -1,6 +1,6 @@
 %%Imports the stereo video
 
-load('stereoCalibrationParams.mat');
+load('calibrationSession.mat');
 
 stereoVidLeft = 'stereoVidLeft.mp4';
 stereoVidRight = 'stereoVidRight.mp4';
@@ -11,6 +11,14 @@ readerRight = vision.VideoFileReader(sterioVidRight, 'VideoOutputDataType','uint
 %Set the outputVideoParams
 obj = VideoReader(stereoVidLeft);
 nFrames = obj.NumberofFrames;
+
+%Train detectors
+negativeFolder = 'TrainingImages/notcars'
+load positiveInstances
+positiveInstances = data;
+detectorFile = 'CarDetector.xml';
+trainCascadeObjectDetector(detectorFile, positiveInstances, negativeFolder, 'FalseAlarmRate',0.01,'NumCascadeStages',10);
+detector = visionCascadeObjectDetector(detectorFile);
 
 %Read and Rectify Video Frames
 frameLeft = readerLeft.step();
@@ -47,6 +55,9 @@ for k = 1 : nFrames
         frameLeftGray = rgb2gray(frameLeftRect);
         frameRightGray = rgb2gray(frameRightRect);
         
+        %Detect Cars
+        bboxes = step(detector,frameLeftGray);
+        
         % Builds a disparity map between the left and right images
         disparityMap = disparity(frameLeftGray, framerightGray);
         
@@ -56,6 +67,11 @@ for k = 1 : nFrames
     % Uses that point cloud to find the distance to the center of the vehicle bounding box
         % To reduce noise it may be preferable to use an average of a small group of pixels at the center
         ptCloud = pcdenoise(point3D);
+        ptCloud = ptCloud/1000;
+        if ~isempty(bboxes)
+            centroids = [round(bboxes(:
+        else
+            dispFrame = frameLeftRect;
         
     % Outputs the left side source video with the following items overlaid:
         % Bounding box around the vehicle in front
