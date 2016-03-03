@@ -2,18 +2,21 @@
 
 load('calibrationSession.mat');
 
-stereoVidLeft = 'stereoVidLeft.mp4';
-stereoVidRight = 'stereoVidRight.mp4';
+stereoVidLeft = 'StereoVideos/stereoVidLeft.mp4';
+stereoVidRight = 'StereoVideos/stereoVidRight.mp4';
 
 readerLeft = vision.VideoFileReader(stereoVidLeft, 'VideoOutputDataType','uint8');
 readerRight = vision.VideoFileReader(sterioVidRight, 'VideoOutputDataType','uint8');
 
 %Set the outputVideoParams
+
 obj = VideoReader(stereoVidLeft);
 nFrames = obj.NumberofFrames;
+F(1:nFrames) = struct('cdata',zeros(vidHeight,vidWidth,3,'uint8'),'colormap',[]);
+
 
 %Train detectors
-negativeFolder = 'TrainingImages/notcars'
+negativeFolder = 'TrainingImages/notcars';
 load positiveInstances
 positiveInstances = data;
 detectorFile = 'CarDetector.xml';
@@ -69,15 +72,33 @@ for k = 1 : nFrames
         ptCloud = pcdenoise(point3D);
         ptCloud = ptCloud/1000;
         if ~isempty(bboxes)
-            centroids = [round(bboxes(:
+            centroids = [round(bboxes(:,1) + bboxes(:,3)/2),round(bboxes(:,2) +bboxes(:,4)/2)];
+            %Find the 3-D world coordinates
+            centroidsIdx = sub2ind(size(disparityMap),centroids(:,2),centroids(:,1));
+            X = point3D(:,:,1);
+            Y = point3D(:,:,2);
+            Z = point3D(:,:,3);
+            centroids3D = [X(centroidsIdx),Y(centroidsIdx), Z(centroidsIdx)];
+            
+            %Distance from camera in meters
+            dists = sqrt(sum(centroids3D .^2,2))/1000;
+            
+            %Display the detected cars and distances
+            labels = cell(1,numel(dists));
+            for i=1:numel(dists)
+                labels{i} = sprintf('%.2f meters',dists(i));
+            end
+            dispFrame = insertObjectAnnotation(frameLeftRect, 'rectangle',bboxes,labels);
+        
         else
             dispFrame = frameLeftRect;
-        
+        end
     % Outputs the left side source video with the following items overlaid:
         % Bounding box around the vehicle in front
         % Text above or below the bounding box stating:
             % Estimated distance to the center of the vehicle bounding box
             % Location of the vehicle bounding box center (in pixels measured relative to image center)
             % Note: text should include units and a label for each item (e.g. Distance: 20 meters)
+        F(k) = im2frame(dispFrame);
 end
 % Outputs a figure plotting the distance to the vehicle in front throughout the duration of the video.
