@@ -1,0 +1,20 @@
+%%Read movie to frame structure
+
+obj = VideoReader('activity2Video.mp4');
+nFrames = obj.NumberOfFrames;
+vidHeight = obj.Height;
+vidWidth = obj.Width;
+
+mov(1:nFrames) = struct('cdata',zeros(vidHeight,vidWidth,3,'uint8'),'colormap',[]);
+
+F(1:nFrames) = struct('cdata',zeros(vidHeight,vidWidth,3,'uint8'),'colormap',[]);
+v = VideoWriter('outputVideo.avi');
+%%Process
+h = waitbar(0,'Processing Video 0%');
+while hasFrame(obj)
+    
+    
+    writeVideo(v,frame);
+end
+close(h);
+close(v);
