@@ -1,9 +1,9 @@
 %%Imports the stereo video
 
-load('calibrationSession.mat');
 
-stereoVidLeft = 'StereoVideos/stereoVidLeft.mp4';
-stereoVidRight = 'StereoVideos/stereoVidRight.mp4';
+stereoParams = 'StereoCalibration/stereoParameters.mat';
+stereoVidLeft = 'StereoVideos/left/';
+stereoVidRight = 'StereoVideos/right/';
 
 readerLeft = vision.VideoFileReader(stereoVidLeft, 'VideoOutputDataType','uint8');
 readerRight = vision.VideoFileReader(sterioVidRight, 'VideoOutputDataType','uint8');
