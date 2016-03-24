@@ -1,8 +1,6 @@
 %% Imports the stereo video
-[stereoP,stereoPath] = uigetfile(path,'Select the file for the stereoParams');
-stereoParams = strcat(stereoPath,'',stereoP);
-stereoParams = load(stereoParams);
-stereoParams = stereoParams.stereoParams;
+stereoParams = uigetfile(path,'Select the file for the stereoParams');
+load stereoParams;
 
 %% Set the outputVideoParams
 nFrames = 486;
@@ -38,7 +36,7 @@ for k = 1:486
     
 
     %Rectifies each stereo frame to ensure the left and right images are aligned
-    [frameLeftRect, frameRightRect] = rectifyStereoImages(frameLeft, frameRight, stereoParams);
+    [frameLeftrect, frameRightRect] = rectifyStereoImages(frameLeft, frameRight, stereoParams);
     frameLeftGray = rgb2gray(frameLeftRect);
     frameRightGray = rgb2gray(frameRightRect);
 
@@ -46,7 +44,7 @@ for k = 1:486
     bboxes = step(detector,frameLeftGray);
 
     % Builds a disparity map between the left and right images
-    disparityMap = disparity(frameLeftGray, frameRightGray,'DisparityRange',[0 64]);
+    disparityMap = disparity(frameLeftGray, framerightGray);
 
     % Reconstructs the disparity map to generate a point cloud
     point3D = reconstructScene(disparityMap,stereoParams);

@@ -25,7 +25,12 @@ for k=1:nFrames
     waitbar(perc,h,sprintf('Processing Video %d%%',int8(perc*100)));
     frame = read(obj,k);
     bbox = step(detector,frame);
-    stopSignsLabels = insertObjectAnnotation(frame,'rectangle',bbox,'dimensions and location here');
+    if bbox
+        data = strcat(int2str(bbox(3)),'x',int2str(bbox(4)),' | ',int2str(bbox(1)-960),',',int2str(bbox(2)-540));
+    else
+        data = '';
+    end
+    stopSignsLabels = insertObjectAnnotation(frame,'rectangle',bbox,data);
 
     writeVideo(v,stopSignsLabels);
     k = k+1;
